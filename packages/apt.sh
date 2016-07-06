@@ -11,8 +11,11 @@ apt-get update
 apt-get --allow-unauthenticated install sur5r-keyring
 
 # Set upt chrome repository
-wget -q -O - "https://dl-ssl.google.com/linux/linux_signing_key.pub" | sudo apt-key add -
-sudo sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+wget -q -O - "https://dl-ssl.google.com/linux/linux_signing_key.pub" | apt-key add -
+chromepkg="deb http://dl.google.com/linux/chrome/deb/ stable main"
+if ! grep "$chromepkg" /etc/apt/sources.list.d/google-chrome.list; then
+	echo "$chromepkg" >> /etc/apt/sources.list.d/google-chrome.list
+fi
 
 # Update with new repositories
 apt-get update
