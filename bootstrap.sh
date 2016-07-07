@@ -1,5 +1,5 @@
 # Install git so we can get the rest of this repo
-if ! sudo apt-get install git; then
+if ! sudo apt-get -y install git; then
     echo "Unable to install git. The config repo cannot be installed."
     exit 1
 fi

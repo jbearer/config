@@ -22,7 +22,7 @@ apt-get update
 
 add_package()
 {
-  yes | apt-get install $1
+  apt-get -y install $1
 }
 
 # Packages
