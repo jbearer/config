@@ -124,7 +124,9 @@ bindsym $mod+Shift+r restart
 bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
 
 # multimedia controls
-set $sink `pactl list short sinks | grep RUNNING | cut -f1`
+
+# This works, but I don't know why
+set $sink 1
 set $volinc 0.5dB
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume $sink +$volinc && pactl set-sink-mute $sink 0
 bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume $sink -$volinc
