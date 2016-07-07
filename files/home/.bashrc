@@ -3,7 +3,7 @@
 # for examples
 
 source "$HOME/.bash_colors"
-source "$HOME/.git-prompt.sh"
+source "$HOME/.git_prompt.sh"
 
 # If not running interactively, don't do anything
 case $- in
