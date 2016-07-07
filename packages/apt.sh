@@ -28,3 +28,4 @@ add_package()
 # Packages
 add_package i3
 add_package google-chrome-stable
+add_package xbacklight

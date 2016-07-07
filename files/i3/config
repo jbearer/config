@@ -132,6 +132,9 @@ bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume $sink +$
 bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume $sink -$volinc
 bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute $sink toggle
 
+bindsym XF86MonBrightnessUp exec --no-startup-id xbacklight -inc 10
+bindsym XF86MonBrightnessDown exec --no-startup-id xbacklight -dec 10
+
 # resize window (you can also use the mouse for that)
 mode "resize" {
         # These bindings trigger as soon as you enter the resize mode
