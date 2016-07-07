@@ -1,53 +1,70 @@
 #!/usr/bin/env bash
 
+FORCE=false
+
 for opt in $@; do
     case "$opt" in
-        "-d"|"--debug" )
-            DEBUG=1
+        "-f"|"--force" )
+            FORCE=true
             ;;
     esac
 done
 
-if [[ -z "$DEBUG" ]] ; then
-    echo "The installation script may delete and/or overwrite existing files. Proceed anyway? y\n"
-    read response
-    if [[ "$response" != "y" ]]; then
-        exit 1
-    fi
-fi
+# Install packages
+for pkg_list in `ls packages`; do
+  source packages/$pkg_list
+done
 
-if [[ -z "$DEBUG" ]] ; then
-    # Install packages
-    for pkg_list in `ls packages`; do
-      source packages/$pkg_list
-    done
+curl "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh" -o "~/.git-prompt.sh"
 
-    curl "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh" -o "~/.git-prompt.sh"
-fi
-
-lsdir()
+exists()
 {
-    ls --file-type $1 | grep /
+    find `dirname "$1"` -maxdepth 1 -name `basename "$1"` | fgrep "$1" > /dev/NUL
+}
+
+confirm_overwrite()
+{
+    echo -n "Overwrite existing file $1? "
+    read -n 1 response
+    echo "" # Newline
+
+    if [[ "$response" == "y" ]]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 install_files()
 {
     echo "Searching directory ${1} for install files"
 
-    if find "$1" -maxdepth 1 -name .prefix | fgrep "${1}.prefix" > /dev/NUL; then
+    if exists "${1}.prefix"; then
         # symlink files in this directory
         eval "prefix=`cat ${1}.prefix`"
         for f in `find "$1" -maxdepth 1 -type f`; do
             target="$f"
             base=`basename "$f"`
+            linkname="${prefix}${base}"
 
             if [[ "$base" == ".prefix" ]]; then
                 continue
             fi
 
-            echo "Installing ${prefix}${base} from ${target}"
+            if exists "$linkname"; then
+                if ! $FORCE; then
+                    if ! confirm_overwrite "$linkname"; then
+                        continue
+                    fi
+                fi
+
+                echo "Removing existing file $linkname"
+                rm -f "$linkname"
+            fi
+
+            echo "Installing $linkname from ${target}"
             mkdir --parents "$prefix"
-            ln -s "$target" "${prefix}${base}"
+            ln -s "$target" "$linkname"
         done
     fi
 
