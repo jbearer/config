@@ -22,10 +22,9 @@ apt-get update
 
 add_package()
 {
-  apt-get install $1
+  yes | apt-get install $1
 }
 
 # Packages
-add_package git
 add_package i3
 add_package google-chrome-stable
