@@ -104,6 +104,8 @@ set $64BITS = 0
 # debug in assem mode (off by default)
 set $ASSEM = 0
 
+source ~/.gdbinit.local
+
 set confirm off
 set verbose off
 set history filename ~/.gdb_history
@@ -3855,6 +3857,17 @@ if $COLOREDPROMPT == 1
 else
     disablecolorprompt
 end
+
+# Pretty printers
+python
+import sys
+sys.path.insert(0, '/home/jbearer/gdb/python')
+from libstdcxx.v6.printers import register_libstdcxx_printers
+register_libstdcxx_printers (None)
+end
+
+# Enable pending breakpoints
+set confirm on
 
 #EOF
 

@@ -94,6 +94,9 @@ if $PACKAGES; then
     for pkg_list in `ls packages`; do
       source packages/$pkg_list
     done
+
+    # Set up gdb STL pretty printers
+    $(mkdir --parents "~/gdb" && cd "~/gdb" && svn co svn://gcc.gnu.org/svn/gcc/trunk/libstdc++-v3/python)
 fi
 
 if $FILES; then

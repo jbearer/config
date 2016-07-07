@@ -30,3 +30,5 @@ add_package i3
 add_package google-chrome-stable
 add_package xbacklight
 add_package arandr
+add_package subversion
+add_package gdb
