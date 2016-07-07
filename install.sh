@@ -58,23 +58,53 @@ install_files()
 }
 
 FORCE=false
+PACKAGES=false
+FILES=false
+DIRECTORIES=false
 
 for opt in $@; do
     case "$opt" in
         "-f"|"--force" )
             FORCE=true
             ;;
+        "packages" )
+            PACKAGES=true
+            ;;
+        "files" )
+            FILES=true
+            ;;
+        "directories" )
+            DIRECTORIES=true
+            ;;
+        * )
+            echo "Invalid option $opt"
+            exit 1
+            ;;
     esac
 done
 
-# Install packages
-for pkg_list in `ls packages`; do
-  source packages/$pkg_list
-done
+if ! $PACKAGES && ! $FILES && ! $DIRECTORIES; then
+    # Default to installing everything
+    PACKAGES=true
+    FILES=true
+    DIRECTORIES=true
+fi
 
-# Download git shell prompt
-curl "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh" -o "$HOME/.git_prompt.sh"
+if $PACKAGES; then
+    for pkg_list in `ls packages`; do
+      source packages/$pkg_list
+    done
+fi
 
-install_files `pwd`/files/
+if $FILES; then
+    # Download git shell prompt
+    curl "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh" -o "$HOME/.git_prompt.sh"
 
-source files/home/.bashrc
+    install_files `pwd`/files/
+
+    source files/home/.bashrc
+fi
+
+if $DIRECTORIES; then
+    echo "Directory install not yet supported"
+fi
