@@ -1,14 +1,13 @@
 [user]
-	name = Jeb Bearer
-	email = jbearer@hmc.edu
+    name = Jeb Bearer
 [push]
-	default = tracking
+    default = tracking
 
 [branch]
-	autosetuprebase = always
+    autosetuprebase = always
 
 [commit]
-	template = ~/misc/git-commit-template.txt
+    template = ~/misc/git-commit-template.txt
 
 [alias]
     st = status -s
@@ -112,4 +111,7 @@
     #undodammit
     undodammit = "checkout @HEAD{1}"
 [credential]
-	helper = store
+    helper = store
+
+[include]
+    path = ~/.gitconfig.local
