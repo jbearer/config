@@ -2,7 +2,7 @@
 
 exists()
 {
-    find `dirname "$1"` -maxdepth 1 -name `basename "$1"` | fgrep "$1" > /dev/NUL
+    find `dirname "$1"` -maxdepth 1 -name `basename "$1"` | fgrep "$1" > /dev/null
 }
 
 confirm_overwrite()
