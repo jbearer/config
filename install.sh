@@ -72,7 +72,8 @@ for pkg_list in `ls packages`; do
   source packages/$pkg_list
 done
 
-curl "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh" -o "~/.git-prompt.sh"
+# Download git shell prompt
+curl "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh" -o "$HOME/.git-prompt.sh"
 
 install_files `pwd`/files/
 
