@@ -1,22 +1,5 @@
 #!/usr/bin/env bash
 
-FORCE=false
-
-for opt in $@; do
-    case "$opt" in
-        "-f"|"--force" )
-            FORCE=true
-            ;;
-    esac
-done
-
-# Install packages
-for pkg_list in `ls packages`; do
-  source packages/$pkg_list
-done
-
-curl "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh" -o "~/.git-prompt.sh"
-
 exists()
 {
     find `dirname "$1"` -maxdepth 1 -name `basename "$1"` | fgrep "$1" > /dev/NUL
@@ -73,6 +56,23 @@ install_files()
         install_files "${1}${dir}"
     done
 }
+
+FORCE=false
+
+for opt in $@; do
+    case "$opt" in
+        "-f"|"--force" )
+            FORCE=true
+            ;;
+    esac
+done
+
+# Install packages
+for pkg_list in `ls packages`; do
+  source packages/$pkg_list
+done
+
+curl "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh" -o "~/.git-prompt.sh"
 
 install_files `pwd`/files/
 
