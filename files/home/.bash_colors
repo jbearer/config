@@ -1,0 +1,11 @@
+BOLD="\[\033[1m\]"
+
+RED_FG="\[$(tput setaf 1)\]"
+GREEN_FG="\[$(tput setaf 2)\]"
+YELLO_FG="\[$(tput setaf 3)\]"
+BLUE_FG="\[$(tput setaf 4)\]"
+MAGENTA_FG="\[$(tput setaf 5)\]"
+CYAN_FG="\[$(tput setaf 6)\]"
+WHITE_FG="\[$(tput setaf 7)\]"
+
+RESET="\[$(tput sgr0)\]"

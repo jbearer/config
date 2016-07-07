@@ -2,7 +2,7 @@
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
 
-source "$HOME/.bash-colors"
+source "$HOME/.bash_colors"
 source "$HOME/.git-prompt.sh"
 
 # If not running interactively, don't do anything
@@ -123,6 +123,6 @@ fi
 export PS1="${BOLD}${BLUE_FG}\W${GREEN_FG}\$(__git_ps1) ${BLUE_FG}\$ ${RESET}"
 
 # Any config local to this machine that should not be tracked by the repository
-. ~/.bash_local
+. ~/.bashrc.local
 
 
