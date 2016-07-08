@@ -1,66 +1,71 @@
 #!/usr/bin/env bash
 
-exists()
+filetype()
 {
-    find `dirname "$1"` -maxdepth 1 -name `basename "$1"` | fgrep "$1" > /dev/null
+    ftype="<unknown file type>"
+    if [[ -f "$1" ]]; then
+        ftype="file"
+    elif [[ -d "$1" ]]; then
+        ftype="directory"
+    fi
+    echo "$ftype"
 }
 
-confirm_overwrite()
+remove_opt()
 {
-    echo -n "Overwrite existing file $1? "
-    read -n 1 response
-    echo "" # Newline
+    if [[ -e "$1" ]]; then
+        ftype=`filetype "$1"`
 
-    if [[ "$response" == "y" ]]; then
-        return 0
-    else
+        if ! $FORCE; then
+            echo -n "Overwrite existing $ftype $1? "
+            read -n 1 response
+            echo "" # Newline
+            if [[ "$response" != "y" ]]; then
+                return 1
+            fi
+        fi
+
+        echo "Removing existing $ftype $1"
+        rm -rf "$1"
+    fi
+}
+
+overwrite_opt()
+{
+    if ! remove_opt "$2"; then
         return 1
     fi
+
+    ftype=`filetype "$1"`
+    echo "Installing $ftype $2 from $1"
+    mkdir --parents `dirname $2`
+    ln -s "$1" "$2"
 }
 
 install_files()
 {
     echo "Searching directory ${1} for install files"
 
-    if exists "${1}.prefix"; then
+    if [[ -e "${1}.prefix" ]]; then
         # symlink files in this directory
         eval "prefix=`cat ${1}.prefix`"
-        for f in `find "$1" -maxdepth 1 -type f`; do
+        for f in `find "$1" -maxdepth 1 ! -wholename "${1}.prefix" ! -wholename "$1"`; do
             target="$f"
-            base=`basename "$f"`
-            linkname="${prefix}${base}"
+            linkname="${prefix}`basename $f`"
 
-            if [[ "$base" == ".prefix" ]]; then
-                continue
-            fi
-
-            if exists "$linkname"; then
-                if ! $FORCE; then
-                    if ! confirm_overwrite "$linkname"; then
-                        continue
-                    fi
-                fi
-
-                echo "Removing existing file $linkname"
-                rm -f "$linkname"
-            fi
-
-            echo "Installing $linkname from ${target}"
-            mkdir --parents "$prefix"
-            ln -s "$target" "$linkname"
+            overwrite_opt "$target" "$linkname"
+        done
+    else
+        # search nested diretories
+        for dir in `ls --file-type "$1" | grep /`; do
+            install_files "${1}${dir}"
         done
     fi
-
-    # recurse on nested diretories
-    for dir in `ls --file-type "$1" | grep /`; do
-        install_files "${1}${dir}"
-    done
 }
 
 FORCE=false
 PACKAGES=false
 FILES=false
-DIRECTORIES=false
 
 for opt in $@; do
     case "$opt" in
@@ -73,9 +78,6 @@ for opt in $@; do
         "files" )
             FILES=true
             ;;
-        "directories" )
-            DIRECTORIES=true
-            ;;
         * )
             echo "Invalid option $opt"
             exit 1
@@ -83,11 +85,10 @@ for opt in $@; do
     esac
 done
 
-if ! $PACKAGES && ! $FILES && ! $DIRECTORIES; then
+if ! $PACKAGES && ! $FILES; then
     # Default to installing everything
     PACKAGES=true
     FILES=true
-    DIRECTORIES=true
 fi
 
 if $PACKAGES; then
@@ -95,8 +96,22 @@ if $PACKAGES; then
       source packages/$pkg_list
     done
 
-    # Set up gdb STL pretty printers
-    $(mkdir --parents "~/gdb" && cd "~/gdb" && svn co svn://gcc.gnu.org/svn/gcc/trunk/libstdc++-v3/python)
+    # Add-ons for some packages
+    echo "Instaling gdb stl pretty-printers"
+    mkdir --parents "$HOME/gdb/python"
+    svn co "svn://gcc.gnu.org/svn/gcc/trunk/libstdc++-v3/python" "$HOME/gdb/python"
+
+    # Set up j4-make-config
+    echo "Installing j4-make-config"
+    if remove_opt "/tmp/downloaded.zip" && remove_opt "/tmp/downloaded"; then
+        wget -O "/tmp/downloaded.zip" "https://github.com/okraits/j4-make-config/archive/master.zip"
+        unzip -d "/tmp/downloaded" "/tmp/downloaded.zip"
+        rm -f "/tmp/downloaded.zip"
+        root=`ls "/tmp/downloaded"`
+        mv "/tmp/downloaded/$root/j4-make-config" "/usr/bin"
+        mv "/tmp/downloaded/$root/themes" "files/i3"
+        rm -rf "/tmp/downloaded"
+    fi
 fi
 
 if $FILES; then
@@ -104,10 +119,14 @@ if $FILES; then
     curl "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh" -o "$HOME/.git_prompt.sh"
 
     install_files `pwd`/files/
-
-    source files/home/.bashrc
 fi
 
-if $DIRECTORIES; then
-    echo "Directory install not yet supported"
+# Update everything
+if [[ -e "~/.bashrc" ]]; then
+    source "~/.bashrc"
+fi
+
+if which "j4-make-config"; then
+    touch "~/.config/i3/config.local"
+    j4-make-config -a "~/.config/i3/config.local" -r none
 fi

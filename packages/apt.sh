@@ -32,3 +32,4 @@ add_package xbacklight
 add_package arandr
 add_package subversion
 add_package gdb
+add_package bashdb
