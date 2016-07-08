@@ -11,6 +11,7 @@
 
 [alias]
     st = status -s
+    uno = status -uno
 
     #cl = clone
 
