@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# Adjust a PulseAudio sink. The user passes in a string containing
+# $sink. The script substitutes the active sink id for $sink and
+# evaluates the command.
+
+if [[ $# < 1 ]]; then
+    echo "Must specify a command."
+    exit 1
+fi
+
+# Look for a running sink
+if sink=`pactl list short sinks | egrep "RUNNING|IDLE"`; then
+    sink=`echo $sink | cut -f 1 -d " "`
+    eval "$1"
+
+    # Save this as the active sink
+    echo "$sink" > "$HOME/active_sink"
+
+    exit 0
+fi
+
+if [[ -e "/etc/active_sink" ]]; then
+    sink=`cat "$HOME/active_sink"`
+
+    # The user passes in a command, and we substitute sink
+    if eval "$1"; then
+        exit 0
+    fi
+fi
+
+# Use default sink. We use the last sink listed because it coincidentally works.
+for sink in `pactl list short sinks | cut -f 1`; do : ; done
+eval "$1"

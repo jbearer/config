@@ -122,11 +122,11 @@ if $FILES; then
 fi
 
 # Update everything
-if [[ -e "~/.bashrc" ]]; then
-    source "~/.bashrc"
+if [[ -e "$HOME/.bashrc" ]]; then
+    source "$HOME/.bashrc"
 fi
 
 if which "j4-make-config"; then
-    touch "~/.config/i3/config.local"
-    j4-make-config -a "~/.config/i3/config.local" -r none
+    touch "$HOME/.config/i3/config.local"
+    j4-make-config -a "$HOME/.config/i3/config.local" -r none
 fi
