@@ -194,8 +194,8 @@ if $PACKAGES; then
         # Update themes as user
         mv -f /tmp/downloaded/$root/themes/* "files/i3/themes"
         for file in `ls files/i3/themes`; do
-            chown "$USER" "$file"
-            chgrp "$USER" "$file"
+            chown "$USER" "files/i3/themes/$file"
+            chgrp "$USER" "files/i3/themes/$file"
         done
         sudo -u "$USER" git add -u; git commit -m "Updated j4-make-config themes"; git push
 
