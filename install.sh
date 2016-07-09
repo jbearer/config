@@ -197,7 +197,7 @@ if $PACKAGES; then
             chown "$USER" "files/i3/themes/$file"
             chgrp "$USER" "files/i3/themes/$file"
         done
-        sudo -u "$USER" git add -u; git commit -m "Updated j4-make-config themes"; git push
+        sudo -u "$USER" (git add -u; git commit -m "Updated j4-make-config themes"; git push)
 
         rm -rf "/tmp/downloaded"
     fi
