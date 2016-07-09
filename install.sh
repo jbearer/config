@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-filetype()
+filetype() # filepath
 {
     ftype="<unknown file type>"
     if [[ -f "$1" ]]; then
@@ -11,7 +11,7 @@ filetype()
     echo "$ftype"
 }
 
-confirm()
+confirm() # prompt
 {
     if $FORCE; then
         return 0
@@ -25,7 +25,7 @@ confirm()
     fi
 }
 
-remove_opt()
+remove_opt() # target
 {
     if [[ -e "$1" ]]; then
         ftype=`filetype "$1"`
@@ -38,7 +38,24 @@ remove_opt()
     fi
 }
 
-overwrite_opt()
+setpriv() # src dst
+{
+	owner="`stat -c "%U" "$1"`"
+	group="`stat -c "%G" "$1"`"
+
+	if [[ "$owner" != "root" ]]; then
+		owner="$USER"
+	fi
+
+	if [[ "$group" != "root" ]]; then
+		group="$USER"
+	fi
+
+	chown "$owner" "$2"
+	chgrp "$group" "$2"
+}
+
+overwrite_opt() # src dst
 {
     if ! remove_opt "$2"; then
         return 1
@@ -47,9 +64,10 @@ overwrite_opt()
     ftype=`filetype "$1"`
     echo "Installing $ftype $2 from $1"
 
-    # Make the link as user so he will own the new stuff
-    sudo -u "$USER" mkdir --parents `dirname $2`
-    sudo -u "$USER" ln -s "$1" "$2"
+    mkdir --parents `dirname $2`
+    setpriv "`dirname $1`" "`dirname $2`" 	# Correct the owner/group of the new directory
+    ln -s "$1" "$2"
+    setpriv "$1" "$2"						# Correct the owner/group of the new file
 }
 
 install_files()
