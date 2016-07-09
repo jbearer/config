@@ -40,19 +40,19 @@ remove_opt() # target
 
 setpriv() # src dst
 {
-	owner="`stat -c "%U" "$1"`"
-	group="`stat -c "%G" "$1"`"
+    owner="`stat -c "%U" "$1"`"
+    group="`stat -c "%G" "$1"`"
 
-	if [[ "$owner" != "root" ]]; then
-		owner="$USER"
-	fi
+    if [[ "$owner" != "root" ]]; then
+        owner="$USER"
+    fi
 
-	if [[ "$group" != "root" ]]; then
-		group="$USER"
-	fi
+    if [[ "$group" != "root" ]]; then
+        group="$USER"
+    fi
 
-	chown "$owner" "$2"
-	chgrp "$group" "$2"
+    chown "$owner" "$2"
+    chgrp "$group" "$2"
 }
 
 overwrite_opt() # src dst
@@ -65,9 +65,8 @@ overwrite_opt() # src dst
     echo "Installing $ftype $2 from $1"
 
     mkdir --parents `dirname $2`
-    setpriv "`dirname $1`" "`dirname $2`" 	# Correct the owner/group of the new directory
+    setpriv "`dirname $1`" "`dirname $2`" # Correct the owner/group of the new directory
     ln -s "$1" "$2"
-    setpriv "$1" "$2"						# Correct the owner/group of the new file
 }
 
 install_files()
@@ -193,7 +192,11 @@ if $PACKAGES; then
         mv "/tmp/downloaded/$root/j4-make-config" "/usr/bin"
 
         # Update themes as user
-        sudo -u "$USER" mv -f /tmp/downloaded/$root/themes/* "files/i3/themes"
+        mv -f /tmp/downloaded/$root/themes/* "files/i3/themes"
+        for file in `ls files/i3/themes`; do
+            chown "$USER" "$file"
+            chgrp "$USER" "$file"
+        done
         sudo -u "$USER" git add -u; git commit -m "Updated j4-make-config themes"; git push
 
         rm -rf "/tmp/downloaded"
