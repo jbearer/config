@@ -11,18 +11,26 @@ filetype()
     echo "$ftype"
 }
 
+confirm()
+{
+    if $FORCE; then
+        return 0
+    fi
+
+    echo -n "$1 "
+    read -n 1 response
+    echo "" # Newline
+    if [[ "$response" != "y" ]]; then
+        return 1
+    fi
+}
+
 remove_opt()
 {
     if [[ -e "$1" ]]; then
         ftype=`filetype "$1"`
-
-        if ! $FORCE; then
-            echo -n "Overwrite existing $ftype $1? "
-            read -n 1 response
-            echo "" # Newline
-            if [[ "$response" != "y" ]]; then
-                return 1
-            fi
+        if ! confirm "Overwrite existing $ftype $1?"; then
+            return 1
         fi
 
         echo "Removing existing $ftype $1"
@@ -38,8 +46,10 @@ overwrite_opt()
 
     ftype=`filetype "$1"`
     echo "Installing $ftype $2 from $1"
-    mkdir --parents `dirname $2`
-    ln -s "$1" "$2"
+
+    # Make the link as user so he will own the new stuff
+    sudo -u "$USER" mkdir --parents `dirname $2`
+    sudo -u "$USER" ln -s "$1" "$2"
 }
 
 install_files()
@@ -63,23 +73,58 @@ install_files()
     fi
 }
 
+contains()
+{
+    for elem in $1; do
+        if [[ "$2" == "$elem" ]]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+# Confirm we have root privileges
+if [[ "$USER" != "root" ]]; then
+    echo "Permission denied! Are you root?"
+    exit 1
+fi
+
+# We know we're root now, we'll repurpose $USER to denote the user who is installing
+unset USER
+
+# Parse options
+
 FORCE=false
 PACKAGES=false
 FILES=false
 
-for opt in $@; do
+while getopts "fu:" opt; do
     case "$opt" in
-        "-f"|"--force" )
+        f )
             FORCE=true
             ;;
-        "packages" )
+        u )
+            USER="$OPTARG"
+            ;;
+        * )
+            exit 1
+            ;;
+    esac
+done
+
+# Positional arguments
+shift `expr $OPTIND - 1`
+for arg in $@; do
+    case "$arg" in
+        packages )
             PACKAGES=true
             ;;
-        "files" )
+        files )
             FILES=true
             ;;
         * )
-            echo "Invalid option $opt"
+            echo "Invalid positional argument $arg"
             exit 1
             ;;
     esac
@@ -90,6 +135,23 @@ if ! $PACKAGES && ! $FILES; then
     PACKAGES=true
     FILES=true
 fi
+
+# Validate inputs
+
+if [[ -z "$USER" ]]; then
+    USER=`users | cut -d " " -f 1`
+    if ! confirm "No user specified. Use default $USER?"; then
+        echo "Please specify a user."
+        exit 1
+    fi
+fi
+
+if ! contains "`users` root" "$USER"; then
+    echo "Invalid user $USER"
+    exit 1
+fi
+
+# Begin installation
 
 if $PACKAGES; then
     for pkg_list in `ls packages`; do
@@ -108,8 +170,14 @@ if $PACKAGES; then
         unzip -d "/tmp/downloaded" "/tmp/downloaded.zip"
         rm -f "/tmp/downloaded.zip"
         root=`ls "/tmp/downloaded"`
+
+        # Install executable
         mv "/tmp/downloaded/$root/j4-make-config" "/usr/bin"
-        mv "/tmp/downloaded/$root/themes" "files/i3"
+
+        # Update themes as user
+        sudo -u "$USER" mv -f /tmp/downloaded/$root/themes/* "files/i3/themes"
+        sudo -u "$USER" git add -u; git commit -m "Updated j4-make-config themes"; git push
+
         rm -rf "/tmp/downloaded"
     fi
 fi
@@ -127,6 +195,6 @@ if [[ -e "$HOME/.bashrc" ]]; then
 fi
 
 if which "j4-make-config"; then
-    touch "$HOME/.config/i3/config.local"
+    sudo -u "$USER" touch "$HOME/.config/i3/config.local"
     j4-make-config -a "$HOME/.config/i3/config.local" -r none
 fi
