@@ -4,7 +4,7 @@ if ! sudo apt-get -y install git; then
     exit 1
 fi
 
-if ! sudo git clone https://github.com/jbearer/config.git ~/config; then
+if ! git clone https://github.com/jbearer/config.git ~/config; then
     echo "Unable to clone config repo. Installation unsuccessful."
     exit 1
 fi
