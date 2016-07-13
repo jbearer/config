@@ -197,9 +197,9 @@ if $PACKAGES; then
             chown "$USER" "files/i3/themes/$file"
             chgrp "$USER" "files/i3/themes/$file"
         done
-        sudo -u "$USER" git add -u
-        sudo -u "$USER" git commit -m "Updated j4-make-config themes"
-        sudo -u "$USER" git push
+        sudo -u "$USER" -H git add -u
+        sudo -u "$USER" -H git commit -m "Updated j4-make-config themes"
+        sudo -u "$USER" -H git push
 
         rm -rf "/tmp/downloaded"
     fi
@@ -218,6 +218,6 @@ if [[ -e "$HOME/.bashrc" ]]; then
 fi
 
 if which "j4-make-config"; then
-    sudo -u "$USER" touch "$HOME/.config/i3/config.local"
+    sudo -u "$USER" -H touch "$HOME/.config/i3/config.local"
     j4-make-config -a "$HOME/.config/i3/config.local" -r none
 fi
