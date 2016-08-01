@@ -73,7 +73,8 @@
     ss = stash save
 
     cp = cherry-pick
-    grep = grep -Ii
+    grep = grep -I
+    egrep = grep -E
     gr = grep -Ii
     #grep from root folder
     gra = "!f() { A= (pwd) && TOPLEVEL=(pwd) && TOPLEVEL= (git rev-parse --show-toplevel) && cd  TOPLEVEL && git grep --full-name -InTOPLEVEL && git grep --full-name -In 1 | xargs -I{} echo  TOPLEVEL/{} && cdTOPLEVEL/{} && cd A; }; f"
