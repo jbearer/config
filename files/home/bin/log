@@ -1,0 +1,48 @@
+#! /usr/bin/env bash
+
+save=false
+separate_error=false
+
+while getopts "sed:" opt; do
+    case "$opt" in
+        s) save=true
+            ;;
+        e) separate_error=true
+            ;;
+        d) LOG="$OPTARG"
+            ;;
+    esac
+done
+
+shift `expr $OPTIND - 1`
+
+if [[ $# < 1 ]]; then
+    >&2 echo "Usage: log [options] <command> [args]"
+    exit 1
+fi
+
+if [[ -z "$LOG" ]]; then
+    # Log in the current directory if not overriden by environment or option
+    LOG=`pwd`
+fi
+
+# Make sure the log directory exists
+mkdir -p "$LOG"
+
+logdir="$LOG"
+proc="$1"
+
+if $save && find "$LOG" -maxdepth 1 -name "$proc.log" | grep "$proc.log" > /dev/null; then
+    cp "$logdir/$proc.log" "$logdir/${proc}_old.log"
+    echo "Old log saved in $logdir/${proc}_old.log."
+fi
+
+echo "Log saved in $logdir/$proc.log."
+if $separate_error; then
+    echo "stderr written to $logdir/$proc.err"
+    exec $@ > "$logdir/$proc.log" 2> "$logdir/$proc.err"
+    exit $?
+else
+    exec $@ &> "$logdir/$proc.log"
+    exit $?
+fi
