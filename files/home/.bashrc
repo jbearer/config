@@ -122,6 +122,9 @@ fi
 # Change the shell prompt. This displays the current folder and a '$'
 export PS1="${BOLD}${BLUE_FG}\W${GREEN_FG}\$(__git_ps1) ${BLUE_FG}\$ ${RESET}"
 
+# Dumping site for logs, program output, errors, etc
+export LOG="${HOME}/log"
+
 # Any config local to this machine that should not be tracked by the repository
 if find "$HOME" -maxdepth 1 -name ".bashrc.local" | grep ".bashrc.local" > /dev/null; then
     source "$HOME/.bashrc.local"
