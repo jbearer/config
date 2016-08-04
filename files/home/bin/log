@@ -41,8 +41,14 @@ echo "Log saved in $logdir/$proc.log."
 if $separate_error; then
     echo "stderr written to $logdir/$proc.err"
     exec $@ > "$logdir/$proc.log" 2> "$logdir/$proc.err"
-    exit $?
+    status=$?
 else
     exec $@ &> "$logdir/$proc.log"
-    exit $?
+    status=$?
 fi
+
+if [[ $status != 0 ]]; then
+    >&2 echo "Error: $status"
+fi
+
+exit $status
