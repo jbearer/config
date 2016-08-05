@@ -1,54 +1,187 @@
 #! /usr/bin/env bash
 
+err() {
+    >&2 echo -e "$@"
+}
+
+usage() {
+    err "Usage: log [options] <command> [args]"
+    err "Options:"
+    err "  -s\t\tSave any existing log files in a <command>_old.(log|err) file"
+    err "  -e\t\tSave stderr output and stdout output in different files"
+    err "  -p kind\tDo not evaluate <command>, instead print the path to the corresponding log file, if one exists"
+    err "\t\t  kind is one of log, log_old, err, or err_old, indicating the log file to find"
+    err "  -c\t\tDo not evaluate <command>, instead remove all existing log files for it"
+    exit 1
+}
+
+get_logdir() {
+    if [[ -z "$LOG" ]]; then
+        pwd
+    else
+        echo "$LOG"
+    fi
+}
+
+path() {
+    if [[ $# != 2 ]]; then
+        err "Usage: log -p [kind] command-name"
+        return 1
+    fi
+
+    pathkind="$1"
+
+    # Default to current log file
+    if [[ "$pathkind" == ":" ]]; then
+        pathkind=log
+    fi
+
+    logdir=`get_logdir`
+    proc=`basename "$2"`
+
+    case "$pathkind" in
+        log)
+            filename="$proc.log"
+            ;;
+        err)
+            filename="$proc.err"
+            ;;
+        log_old)
+            filename="${proc}_old.log"
+            ;;
+        err_old)
+            filename="${proc}_old.err"
+            ;;
+        *)
+            err "Invalid path kind '$pathkind'. Please enter one of:"
+            err -e "\tlog"
+            err -e "\tlog_old"
+            err -e "\terr"
+            err -e "\terr_old"
+            return 1
+            ;;
+    esac
+
+    # There should only ever be (at most) one result, but we guarantee that by just taking the first one
+    found=false
+    for file in `find "$logdir" -maxdepth 1 -name "$filename"`; do
+        echo "$file"
+        found=true
+        break
+    done
+
+    if $found; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+clean() {
+    if [[ $# != 1 ]]; then
+        err "Usage: log -c command-name"
+        return 1
+    fi
+
+    logdir=`get_logdir`
+    proc="$1"
+
+    rm "$logdir/$proc.log"
+    rm "$logdir/$proc.err"
+    rm "$logdir/${proc}_old.log"
+    rm "$logdir/${proc}_old.err"
+
+    return 0
+}
+
+run() {
+    if [[ $# < 1 ]]; then
+        usage
+    fi
+
+    if ! which "$1"; then
+        err "$1: command not found."
+        return 127
+    fi
+
+    if [[ -z "$LOG" ]]; then
+        # Log in the current directory if not overriden by environment or option
+        LOG=`pwd`
+    fi
+
+    logdir=`get_logdir`
+    proc=`basename "$1"`
+
+    # Make sure the log directory exists
+    mkdir -p "$logdir"
+
+    if $save; then
+        if path log "$proc" > /dev/null; then
+            cp "$logdir/$proc.log" "$logdir/${proc}_old.log"
+            echo "Old log saved in $logdir/${proc}_old.log."
+        fi
+        if path err "$proc" > /dev/null; then
+            cp "$logdir/$proc.err" "$logdir/${proc}_old.err"
+            echo "Old error saved in $logdir/${proc}_old.err."
+        fi
+    fi
+
+    echo "Log saved in $logdir/$proc.log."
+    if $separate_error; then
+        echo "stderr written to $logdir/$proc.err"
+        "$@" > "$logdir/$proc.log" 2> "$logdir/$proc.err"
+        status=$?
+    else
+        "$@" &> "$logdir/$proc.log"
+        status=$?
+    fi
+
+    if [[ $status != 0 ]]; then
+        err "Error: $status"
+    fi
+
+    return $status
+}
+
 save=false
 separate_error=false
+target=run
 
-while getopts "sed:" opt; do
+while getopts ":sed:p:c" opt; do
     case "$opt" in
-        s) save=true
+        s)
+            save=true
             ;;
-        e) separate_error=true
+        e)
+            separate_error=true
             ;;
-        d) LOG="$OPTARG"
+        d)
+            LOG="$OPTARG"
+            ;;
+        p)
+            # If the arg is a path kind, then it's really an argument. If not, its the command
+            # name to look up, and the path kind defaults to log
+            case "$OPTARG" in
+                log|err|log_old|err_old)
+                    target="path $OPTARG"
+                    ;;
+                *)
+                    target="path log"
+                    # getopts counted the argument, but it really wasn't an arg to -p
+                    OPTIND=$(($OPTIND - 1))
+                    ;;
+            esac
+            ;;
+        c)
+            target=clean
+            ;;
+        *)
+            usage
             ;;
     esac
 done
 
-shift `expr $OPTIND - 1`
+shift "$(($OPTIND - 1))"
 
-if [[ $# < 1 ]]; then
-    >&2 echo "Usage: log [options] <command> [args]"
-    exit 1
-fi
-
-if [[ -z "$LOG" ]]; then
-    # Log in the current directory if not overriden by environment or option
-    LOG=`pwd`
-fi
-
-# Make sure the log directory exists
-mkdir -p "$LOG"
-
-logdir="$LOG"
-proc="$1"
-
-if $save && find "$LOG" -maxdepth 1 -name "$proc.log" | grep "$proc.log" > /dev/null; then
-    cp "$logdir/$proc.log" "$logdir/${proc}_old.log"
-    echo "Old log saved in $logdir/${proc}_old.log."
-fi
-
-echo "Log saved in $logdir/$proc.log."
-if $separate_error; then
-    echo "stderr written to $logdir/$proc.err"
-    exec $@ > "$logdir/$proc.log" 2> "$logdir/$proc.err"
-    status=$?
-else
-    exec $@ &> "$logdir/$proc.log"
-    status=$?
-fi
-
-if [[ $status != 0 ]]; then
-    >&2 echo "Error: $status"
-fi
-
-exit $status
+$target "$@"
+exit $?
