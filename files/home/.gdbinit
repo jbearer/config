@@ -3858,12 +3858,19 @@ else
     disablecolorprompt
 end
 
-# Pretty printers
+# Python imports
 python
 import sys
+
+# Pretty printers
 sys.path.insert(0, '/home/jbearer/gdb/python')
 from libstdcxx.v6.printers import register_libstdcxx_printers
 register_libstdcxx_printers (None)
+
+# Local commands
+sys.path.insert(0, '/home/jbearer/gdb')
+import list
+
 end
 
 # Enable pending breakpoints
