@@ -86,10 +86,10 @@ clean() {
     logdir=`get_logdir`
     proc="$1"
 
-    rm "$logdir/$proc.log"
-    rm "$logdir/$proc.err"
-    rm "$logdir/${proc}_old.log"
-    rm "$logdir/${proc}_old.err"
+    rm -f "$logdir/$proc.log" &> /dev/null
+    rm -f "$logdir/$proc.err" &> /dev/null
+    rm -f "$logdir/${proc}_old.log" &> /dev/null
+    rm -f "$logdir/${proc}_old.err" &> /dev/null
 
     return 0
 }
@@ -99,7 +99,7 @@ run() {
         usage
     fi
 
-    if ! which "$1"; then
+    if ! which "$1" > /dev/null; then
         err "$1: command not found."
         return 127
     fi
