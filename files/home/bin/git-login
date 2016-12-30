@@ -1,0 +1,29 @@
+#! /usr/bin/env bash
+
+if [[ `git config credential.helper` != "store" ]]; then
+    2>&1 echo "Please enable git credential store to log in. Use git config credential.helper store."
+    exit 1
+fi
+
+if ! [[ -f "$HOME/.git-credentials" ]]; then
+    read -p "No .git-credentials file found. Would you like to create one? " create
+    while [[ "$create" != "y" ]] && [[ "$create" != "n" ]]; do
+        read -p "Please enter y or n: " create
+    done
+
+    case "$create" in
+        y) ;;
+        n) exit 1
+    esac
+fi
+
+read -p "Username: " username
+read -sp "Password: " password
+
+# read -s eats the last newline, so we insert one manually here
+echo
+
+if ! echo "https://$username:$password@github.com" > "$HOME/.git-credentials"; then
+    2>&1 echo "Unable to write credentials to file."
+    exit 1
+fi
