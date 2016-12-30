@@ -4,7 +4,7 @@ add_package()
 {
   echo "Installing $1"
   curl -o "/tmp/downloaded.deb" "$1"
-  dpkg -i "/tmp/downloaded.deb"
+  sudo dpkg -i "/tmp/downloaded.deb"
   rm "/tmp/downloaded.deb"
 }
 
