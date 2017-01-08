@@ -209,6 +209,9 @@ if $FILES; then
     # Download git shell prompt
     curl "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh" -o "$HOME/.git_prompt.sh"
 
+    # Download git autocompletion
+    curl "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash" -o "$HOME/.git-completion.bash"
+
     install_files `pwd`/files/
 fi
 
