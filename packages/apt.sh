@@ -34,3 +34,5 @@ add_package subversion
 add_package gdb
 add_package bashdb
 add_package unclutter
+add_package vim
+add_package htop
