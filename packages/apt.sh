@@ -36,3 +36,6 @@ add_package bashdb
 add_package unclutter
 add_package vim
 add_package htop
+add_package openjdk-8-jdk
+add_package texstudio
+
