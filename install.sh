@@ -222,5 +222,5 @@ fi
 
 if which "j4-make-config"; then
     sudo -u "$USER" -H touch "$HOME/.config/i3/config.local"
-    j4-make-config -a "$HOME/.config/i3/config.local" -r none
+    j4-make-config -r -a config.local none
 fi
