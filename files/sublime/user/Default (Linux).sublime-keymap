@@ -1,0 +1,9 @@
+[
+	{ "keys": ["ctrl+;"], "command": "move_to", "args": {"to": "eol", "extend": false} },
+	{ "keys": ["ctrl+shift+;"], "command": "move_to", "args": {"to": "eol", "extend": true} },
+	{ "keys": ["ctrl+j"], "command": "move_to", "args": {"to": "bol", "extend": false} },
+	{ "keys": ["ctrl+shift+j"], "command": "move_to", "args": {"to": "bol", "extend": true} },
+    { "keys": ["super+v"], "command": "paste_and_indent" },
+    { "keys": ["super+shift+v"], "command": "paste" },
+    { "keys": ["super+shift+r"],  "command": "reindent" }
+]

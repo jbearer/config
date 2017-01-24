@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -a
+
 filetype() # filepath
 {
     ftype="<unknown file type>"
@@ -64,8 +66,8 @@ overwrite_opt() # src dst
     ftype=`filetype "$1"`
     echo "Installing $ftype $2 from $1"
 
-    mkdir --parents `dirname $2`
-    setpriv "`dirname $1`" "`dirname $2`" # Correct the owner/group of the new directory
+    mkdir --parents "`dirname "$2"`"
+    setpriv "`dirname "$1"`" "`dirname "$2"`" # Correct the owner/group of the new directory
     ln -s "$1" "$2"
 }
 
@@ -75,13 +77,13 @@ install_files()
 
     if [[ -e "${1}.prefix" ]]; then
         # symlink files in this directory
+        SPACE=' '
         eval "prefix=`cat ${1}.prefix`"
-        for f in `find "$1" -maxdepth 1 ! -wholename "${1}.prefix" ! -wholename "$1"`; do
-            target="$f"
-            linkname="${prefix}`basename $f`"
-
+        find "$1" -maxdepth 1 ! -wholename "${1}.prefix" ! -wholename "$1" -exec bash -c '
+            target="{}"
+            linkname="$prefix"`basename "$target"`
             overwrite_opt "$target" "$linkname"
-        done
+        ' ';'
     else
         # search nested diretories
         for dir in `ls --file-type "$1" | grep /`; do
@@ -115,14 +117,18 @@ unset USER
 FORCE=false
 PACKAGES=false
 FILES=false
+FILE_ROOT=""
 
-while getopts "fu:" opt; do
+while getopts "fu:r:" opt; do
     case "$opt" in
         f )
             FORCE=true
             ;;
         u )
             USER="$OPTARG"
+            ;;
+        r )
+            FILE_ROOT="$OPTARG"
             ;;
         * )
             exit 1
@@ -212,7 +218,7 @@ if $FILES; then
     # Download git autocompletion
     curl "https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash" -o "$HOME/.git-completion.bash"
 
-    install_files `pwd`/files/
+    install_files `pwd`/files/"$FILE_ROOT"
 fi
 
 # Update everything
