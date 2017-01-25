@@ -77,8 +77,8 @@ install_files()
 
     if [[ -e "${1}.prefix" ]]; then
         # symlink files in this directory
-        SPACE=' '
-        eval "prefix=`cat ${1}.prefix`"
+        #SPACE=' '
+        eval "prefix=\"`cat ${1}.prefix`\""
         find "$1" -maxdepth 1 ! -wholename "${1}.prefix" ! -wholename "$1" -exec bash -c '
             target="{}"
             linkname="$prefix"`basename "$target"`
