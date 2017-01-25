@@ -8,6 +8,6 @@ add_package()
   rm "/tmp/downloaded.deb"
 }
 
-add_package "https://download.sublimetext.com/sublime-text_build-3114_amd64.deb"
+add_package "https://download.sublimetext.com/sublime-text_build-3126_amd64.deb"
 
 apt-get install -f
