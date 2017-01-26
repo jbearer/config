@@ -1,0 +1,55 @@
+#! /usr/bin/env bash
+
+set -e
+
+is_number()
+{
+    re='^-?[0-9]+([.][0-9]+)?$'
+    [[ "$1" =~ $rd ]]
+    return $?
+}
+
+if [[ "$#" != 1 ]]; then
+    echo 2>&1 "Usage: $0 <percent>"
+    exit 1
+fi
+
+percent="$1"
+
+# Make sure input is a number
+
+if ! is_number "$percent"; then
+   echo 2>&1 "Argument $percent is not a number"
+   exit 1
+fi
+
+# Get the current brightness
+brightness_file="$HOME/.backlight"
+if ! [ -f "$brightness_file" ]; then
+    mkdir -p "`dirname "$brightness_file"`"
+    echo 1 > "$brightness_file"
+fi
+
+brightness=`cat "$brightness_file"`
+if ! is_number "$brightness"; then
+    echo 2>&1 "Previous value for brightness ($brightness) is not a number"
+    echo 2>&1 "Restoring to full brightness"
+    brightness=1
+fi
+
+brightness=`echo "$brightness + $brightness * ($percent / 100.0)" | bc -l`
+if [[ `echo "$brightness > 1" | bc -l` == 1 ]]; then
+    brightness=1
+# Do not go off completely
+elif [[ `echo "$brightness < 0.1" | bc -l` == 1 ]]; then
+    brightness=0.1
+fi
+
+# Get the name of the primary display
+disp=`xrandr | grep primary | cut -f 1 -d' '`
+
+# Update the display
+xrandr --output "$disp" --brightness "$brightness"
+
+# Save the new brightness
+echo "$brightness" > "$brightness_file"
