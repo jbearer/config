@@ -1,0 +1,28 @@
+#! /usr/bin/env bash
+
+set -e
+
+# Capture a selection instead of the whole window
+sel=false
+
+while getopts "s" arg; do
+    case "$arg" in
+        "s" )
+            sel=true
+            ;;
+    esac
+done
+
+scrot_flags=""
+$sel && scrot_flags="$scrot_flags -s"
+
+tmpfile="$HOME/Screenshots/Screenshot - `date`.png"
+mkdir -p "`dirname "$tmpfile"`"
+
+# Take the screenshot
+scrot $scrot_flags "$tmpfile"
+
+# Copy to clipboard
+xclip -sel clip -t image/png -i "$tmpfile"
+
+notify-send "Screenshot saved to clipboard"

@@ -143,6 +143,10 @@ adjust_sink "pactl set-sink-mute \$sink toggle"
 bindsym XF86MonBrightnessUp exec --no-startup-id adjust_brightness 10
 bindsym XF86MonBrightnessDown exec --no-startup-id adjust_brightness -10
 
+# Take a screenshot
+bindsym --release Print exec --no-startup-id screenshot
+bindsym --release Shift+Print exec --no-startup-id screenshot -s
+
 # resize window (you can also use the mouse for that)
 mode "resize" {
         # These bindings trigger as soon as you enter the resize mode

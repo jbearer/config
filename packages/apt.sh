@@ -38,4 +38,5 @@ add_package vim
 add_package htop
 add_package openjdk-8-jdk
 add_package texstudio
-
+add_package scrot
+add_package xclip
