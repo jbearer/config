@@ -17,6 +17,12 @@ if ! grep "$chromepkg" /etc/apt/sources.list.d/google-chrome.list; then
 	echo "$chromepkg" >> /etc/apt/sources.list.d/google-chrome.list
 fi
 
+# Set up sbt repositor
+if ! grep "deb https://dl.bintray.com/sbt/debian /" /etc/apt/sources.list.d/sbt.list; then
+    echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list
+fi
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
+
 # Update with new repositories
 apt-get update
 
@@ -36,7 +42,12 @@ add_package bashdb
 add_package unclutter
 add_package vim
 add_package htop
-add_package openjdk-8-jdk
+add_package openjdk-8-jre-headless
 add_package texstudio
 add_package scrot
 add_package xclip
+add_package cmake
+add_package scala
+add_package sbt
+add_package python3-pip
+add_package python3-nose
