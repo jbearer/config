@@ -1,0 +1,43 @@
+#! /usr/bin/env bash
+
+function usage()
+{
+    echo "Usage: $0 <local-file> [username@]<MAC address>:<remote-file> [scp-options]" 2>&1
+}
+
+if [[ $# < 2 ]]; then
+    usage
+    exit 1
+fi
+
+local_file="$1"
+
+case "$2" in
+    *@* )
+        user=`cut -d @ -f 1 <<< "$2"`
+        dst=`cut -d @ -f 2 <<< "$2"`
+        ;;
+    * )
+        user=`whoami`
+        dst="$2"
+        ;;
+esac
+
+case "$dst" in
+    *:* )
+        mac=`cut -d : -f -6 <<< "$dst"`
+        remote_file=`cut -d : -f 7 <<< "$dst"`
+        ;;
+    * )
+        usage
+        exit 1
+        ;;
+esac
+
+shift 2
+
+ip=`ipof "$mac"`
+echo $mac
+echo $ip
+scp "$@" "$local_file" "$user@$ip:$remote_file"
+

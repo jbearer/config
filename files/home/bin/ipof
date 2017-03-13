@@ -1,0 +1,8 @@
+#! /usr/bin/env bash
+
+if [[ $# < 1 ]]; then
+    echo "Usage: $0 <MAC address>" 2>&1
+    exit 1
+fi
+
+arp -a | grep "at $1" | cut -d ' ' -f 2 | tr -d '()'

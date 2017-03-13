@@ -1,0 +1,22 @@
+#! /usr/bin/env bash
+
+if [[ $# < 1 ]]; then
+    echo "Usage: $0 [username@]<MAC address> [ssh-options]" 2>&1
+    exit 1
+fi
+
+case "$1" in
+    *@* )
+        user=`cut -d @ -f 1 <<< "$1"`
+        mac=`cut -d @ -f 2 <<< "$1"`
+        ;;
+    * )
+        user=`whoami`
+        mac="$1"
+        ;;
+esac
+
+shift
+
+ip=`ipof "$mac"`
+ssh "$user@$ip" "$@"
