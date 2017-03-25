@@ -22,7 +22,18 @@ mkdir -p "`dirname "$tmpfile"`"
 # Take the screenshot
 scrot $scrot_flags "$tmpfile"
 
-# Copy to clipboard
-xclip -sel clip -t image/png -i "$tmpfile"
-
-notify-send "Screenshot saved to clipboard"
+# Figure out what to do with the file
+if zenity --window-icon="$tmpfile" --question \
+    --title="Screenshot captured" --text="What do you want to do?" \
+    --ok-label="Copy to clipboard" --cancel-label="Save to file"
+then
+    # Copy to clipboard
+    xclip -sel clip -t image/png -i "$tmpfile"
+    notify-send -i "$tmpfile" "Screenshot saved to clipboard"
+    rm "$tmpfile"
+else
+    # Save to file
+    f=`zenity --file-selection --save --confirm-overwrite`
+    mv "$tmpfile" "$f"
+    notify-send -i "$f" "Screenshot saved to $f"
+fi
