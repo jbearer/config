@@ -3,6 +3,7 @@
 # for examples
 
 source "$HOME/.bash_colors"
+source "$HOME/.bash_functions"
 source "$HOME/.git_prompt.sh"
 source "$HOME/.git-completion.bash"
 
