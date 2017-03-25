@@ -21,3 +21,5 @@ alias svn="${HOME}/bin/svn-color.py"
 alias date="${HOME}/bin/date.py"
 
 alias echo="echo -e"
+
+alias term=i3-sensible-terminal
