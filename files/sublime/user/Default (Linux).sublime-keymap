@@ -7,6 +7,10 @@
     { "keys": ["super+shift+v"], "command": "paste" },
     { "keys": ["super+shift+r"],  "command": "reindent" },
 
+    // Delete subwords
+    { "keys": ["alt+backspace"], "command": "run_macro_file", "args": {"file": "Packages/User/delete_subword_back.sublime-macro"} },
+    { "keys": ["alt+delete"], "command": "run_macro_file", "args": {"file": "Packages/User/delete_subword.sublime-macro"} },
+
     // Auto-pair backticks in bash
     { "keys": ["`"], "command": "insert_snippet", "args": {"contents": "`$0`"}, "context":
         [
