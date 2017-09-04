@@ -120,3 +120,7 @@
 
 [include]
     path = ~/.gitconfig.local
+[receive]
+	denyNonFastForwards = true
+[merge]
+	conflictstyle = diff3
