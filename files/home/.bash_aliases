@@ -23,3 +23,5 @@ alias date="${HOME}/bin/date.py"
 alias echo="echo -e"
 
 alias term=i3-sensible-terminal
+
+alias l1="ls -1"
