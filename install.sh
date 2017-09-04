@@ -2,15 +2,25 @@
 
 set -a
 
-filetype() # filepath
+info()
 {
-    ftype="<unknown file type>"
-    if [[ -f "$1" ]]; then
-        ftype="file"
-    elif [[ -d "$1" ]]; then
-        ftype="directory"
-    fi
-    echo "$ftype"
+    echo "[INFO] $@"
+}
+
+warn()
+{
+    echo "[WARN] $@"
+}
+
+error()
+{
+    echo "[ERROR] $@"
+}
+
+fatal()
+{
+    error "$@"
+    exit 1
 }
 
 confirm() # prompt
@@ -27,6 +37,17 @@ confirm() # prompt
     fi
 }
 
+filetype() # filepath
+{
+    ftype="<unknown file type>"
+    if [[ -f "$1" ]]; then
+        ftype="file"
+    elif [[ -d "$1" ]]; then
+        ftype="directory"
+    fi
+    echo "$ftype"
+}
+
 remove_opt() # target
 {
     if [[ -e "$1" ]]; then
@@ -35,7 +56,7 @@ remove_opt() # target
             return 1
         fi
 
-        echo "Removing existing $ftype $1"
+        info "Removing existing $ftype $1"
         rm -rf "$1"
     fi
 }
@@ -59,21 +80,59 @@ setpriv() # src dst
 
 overwrite_opt() # src dst
 {
-    if ! remove_opt "$2"; then
+    src="$1"
+    dst="$2"
+
+    previous="/tmp/`basename "$dst"`.old"
+
+    if [[ -e "$dst" ]]; then
+        if ! cp -r "$dst" "$previous"; then
+            if ! confirm "Unable to save existing file system state. Any subsequent errors cannot be rolled back. Proceed anyway?"; then
+                return 1
+            fi
+        fi
+    fi
+
+    if ! remove_opt "$dst"; then
         return 1
     fi
 
-    ftype=`filetype "$1"`
-    echo "Installing $ftype $2 from $1"
+    ftype=`filetype "$src"`
+    info "Installing $ftype $dst from $src"
 
-    mkdir --parents "`dirname "$2"`"
-    setpriv "`dirname "$1"`" "`dirname "$2"`" # Correct the owner/group of the new directory
-    ln -s "$1" "$2"
+    mkdir --parents "`dirname "$dst"`"
+    setpriv "`dirname "$src"`" "`dirname "$dst"`" # Correct the owner/group of the new directory
+    ln -s "$src" "$dst"
+
+    info "Verifying installation of $dst"
+    if ! diff -r "$src" "$dst"; then
+        if [[ -e "$previous" ]]; then
+            error "Detected inconsistency in installation of $dst, falling back to previous version"
+            if cp "$previous" "$dst"; then
+                warn "Successfully reverted installation of $dst"
+            else
+                fatal "Unable to revert installation of $dst, check for consistency and retry"
+            fi
+        else
+            error "Detected inconsistency in installation of $dst, removing"
+            if rm -r "$dst" && rmdir -p "`dirname "$dst"`"; then
+                warn "Successfully reverted installation of $dst"
+            else
+                fatal "Unable to revert installation of $dst, check for consistency and retry"
+            fi
+        fi
+    else
+        info "Successfully installed $dst"
+    fi
+
+    if [[ -e "$previous" ]]; then
+        rm -r "$previous"
+    fi
 }
 
 install_files()
 {
-    echo "Searching directory ${1} for install files"
+    info "Searching directory ${1} for install files"
 
     if [[ -e "${1}.prefix" ]]; then
         # symlink files in this directory
@@ -105,8 +164,7 @@ contains()
 
 # Confirm we have root privileges
 if [[ "$USER" != "root" ]]; then
-    echo "Permission denied! Are you root?"
-    exit 1
+    fatal "Permission denied! Are you root?"
 fi
 
 # We know we're root now, we'll repurpose $USER to denote the user who is installing
@@ -164,14 +222,12 @@ fi
 if [[ -z "$USER" ]]; then
     USER=`users | cut -d " " -f 1`
     if ! confirm "No user specified. Use default $USER?"; then
-        echo "Please specify a user."
-        exit 1
+        fatal "Please specify a user."
     fi
 fi
 
 if ! contains "`users` root" "$USER"; then
-    echo "Invalid user $USER"
-    exit 1
+    fatal "Invalid user $USER"
 fi
 
 # Begin installation
@@ -182,12 +238,12 @@ if $PACKAGES; then
     done
 
     # Add-ons for some packages
-    echo "Instaling gdb stl pretty-printers"
+    info "Instaling gdb stl pretty-printers"
     mkdir --parents "$HOME/gdb/python"
     svn co "svn://gcc.gnu.org/svn/gcc/trunk/libstdc++-v3/python" "$HOME/gdb/python"
 
     # Set up j4-make-config
-    echo "Installing j4-make-config"
+    info "Installing j4-make-config"
     if remove_opt "/tmp/downloaded.zip" && remove_opt "/tmp/downloaded"; then
         wget -O "/tmp/downloaded.zip" "https://github.com/okraits/j4-make-config/archive/master.zip"
         unzip -d "/tmp/downloaded" "/tmp/downloaded.zip"
