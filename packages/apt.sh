@@ -52,3 +52,4 @@ add_package sbt
 add_package python3-pip
 add_package python3-nose
 add_package zenity
+add_package exuberant-ctags
