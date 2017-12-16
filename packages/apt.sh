@@ -37,6 +37,7 @@ add_package()
 add_package i3
 add_package google-chrome-stable
 add_package sublime-text
+add_package curl
 add_package xbacklight
 add_package arandr
 add_package subversion
