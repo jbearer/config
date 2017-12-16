@@ -10,18 +10,19 @@ fi
 apt-get update
 apt-get --allow-unauthenticated install sur5r-keyring
 
-# Set upt chrome repository
+# Set up chrome repository
 wget -q -O - "https://dl-ssl.google.com/linux/linux_signing_key.pub" | apt-key add -
-chromepkg="deb http://dl.google.com/linux/chrome/deb/ stable main"
+chromepkg="deb https://dl.google.com/linux/chrome/deb/ stable main"
 if ! grep "$chromepkg" /etc/apt/sources.list.d/google-chrome.list; then
 	echo "$chromepkg" >> /etc/apt/sources.list.d/google-chrome.list
 fi
 
-# Set up sbt repositor
-if ! grep "deb https://dl.bintray.com/sbt/debian /" /etc/apt/sources.list.d/sbt.list; then
-    echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list
+# Set up sublime repository
+wget -qO - "https://download.sublimetext.com/sublimehq-pub.gpg" | apt-key add -
+sublpkg="deb https://download.sublimetext.com/ apt/stable/"
+if ! grep "$sublpkg" /etc/apt/sources.list.d/sublime-text.list; then
+	echo "$sublpkg" >> /etc/apt/sources.list.d/sublime-text.list
 fi
-apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
 
 # Update with new repositories
 apt-get update
