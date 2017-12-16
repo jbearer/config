@@ -42,13 +42,9 @@ add_package bashdb
 add_package unclutter
 add_package vim
 add_package htop
-add_package openjdk-8-jre-headless
-add_package texstudio
 add_package scrot
 add_package xclip
 add_package cmake
-add_package scala
-add_package sbt
 add_package python3-pip
 add_package python3-nose
 add_package zenity
