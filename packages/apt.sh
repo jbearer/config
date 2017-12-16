@@ -27,14 +27,16 @@ fi
 # Update with new repositories
 apt-get update
 
+packages=""
 add_package()
 {
-  apt-get -y install $1
+  packages="$packages $1"
 }
 
 # Packages
 add_package i3
 add_package google-chrome-stable
+add_package sublime-text
 add_package xbacklight
 add_package arandr
 add_package subversion
@@ -50,3 +52,5 @@ add_package python3-pip
 add_package python3-nose
 add_package zenity
 add_package exuberant-ctags
+
+apt-get -y install $packages
